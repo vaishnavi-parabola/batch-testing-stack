@@ -3,7 +3,20 @@ import aws_cdk as cdk
 import os
 
 
-def test_batch_video_chat_lambda_function(scope, function_name, handler_file,  lambda_role):
+def test_batch_video_chat_lambda_function(scope, function_name, handler_file,  lambda_role, table):
+    return _lambda.Function(
+        scope, function_name,
+        runtime=_lambda.Runtime.PYTHON_3_12,
+        handler=f"{handler_file}.handler",
+        code=_lambda.Code.from_asset(os.path.join(os.getcwd(), 'lambda', handler_file)),
+        role=lambda_role,
+        environment={
+            'INFERENCE_SETTINGS_TABLE_NAME': table.table_name
+        },
+        timeout=Duration.minutes(5),
+    )
+    
+def test_batch_video_execution_lambda_function(scope, function_name, handler_file, lambda_role, layer, table):
     return _lambda.Function(
         scope, function_name,
         runtime=_lambda.Runtime.PYTHON_3_12,
@@ -11,7 +24,38 @@ def test_batch_video_chat_lambda_function(scope, function_name, handler_file,  l
         code=_lambda.Code.from_asset(os.path.join(os.getcwd(), 'lambda', handler_file)),
         role=lambda_role,
         timeout=Duration.minutes(5),
+        environment={
+            'INFERENCE_SETTINGS_TABLE_NAME': table.table_name
+        },
+        layers=[layer]
     )
+    
+def test_batch_video_transcript_lambda_function(scope, function_name, handler_file, lambda_role, table):
+    return _lambda.Function(
+        scope, function_name,
+        runtime=_lambda.Runtime.PYTHON_3_12,
+        handler=f"{handler_file}.handler",
+        code=_lambda.Code.from_asset(os.path.join(os.getcwd(), 'lambda', handler_file)),
+        role=lambda_role,
+        timeout=Duration.minutes(5),
+        environment={
+            'INFERENCE_SETTINGS_TABLE_NAME': table.table_name
+        },
+    )
+    
+def test_get_status_by_id_lambda_function(scope, function_name, handler_file, lambda_role, table):
+    return _lambda.Function(
+        scope, function_name,
+        runtime=_lambda.Runtime.PYTHON_3_12,
+        handler=f"{handler_file}.handler",
+        code=_lambda.Code.from_asset(os.path.join(os.getcwd(), 'lambda', handler_file)),
+        environment={
+            'INFERENCE_SETTINGS_TABLE_NAME': table.table_name
+        },
+        role=lambda_role,
+        timeout=Duration.minutes(1)
+    )
+
     
 def create_lambda_role(scope):
     lambda_role = iam.Role(

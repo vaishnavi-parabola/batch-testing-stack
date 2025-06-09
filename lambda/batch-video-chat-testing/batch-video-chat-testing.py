@@ -12,6 +12,8 @@ logging.getLogger().setLevel(logging.INFO)
 s3_client = boto3.client('s3')
 client = boto3.client("bedrock-runtime")
 
+dynamodb = boto3.resource('dynamodb')
+
 # System template for Bedrock AI
 system_template = """The following is a friendly conversation between a Human (H) and an AI Assistant (AI) about a Video. There is no video provided to you but only a transcript of the video. Always remember the following points when having a conversation,
 
@@ -146,7 +148,34 @@ def handler(event, context):
             raise ValueError(f"Invalid S3 URI format. Expected: {expected_prefix}, Got: {s3_dest_uri_w_prefix}")
 
         # Extract bucket and prefix
-        transcript_bucket_name = "cache-us-east-1-054037105643-15bd31e070bd"
+        # transcript_bucket_name = "cache-us-east-1-054037105643-15bd31e070bd"
+        # transcript_prefix = s3_dest_uri_w_prefix.replace(f"s3://{transcript_bucket_name}/", "")
+        # logging.info(f"Checking transcripts in s3://{transcript_bucket_name}/{transcript_prefix}")
+        
+        
+        table_name = os.environ.get('INFERENCE_SETTINGS_TABLE_NAME', 'inference-settings')
+        logging.info("Using DynamoDB table: %s", table_name)
+        table = dynamodb.Table(table_name)
+        
+        # Check if the video entry exists in DynamoDB
+        try:
+            inference_record = table.get_item(
+                Key={'inference_setting_id': '1'}  # Partition key is a string
+            )
+        except dynamodb.meta.client.exceptions.ResourceNotFoundException:
+            logging.error("DynamoDB table %s does not exist", table_name)
+            raise Exception(f"DynamoDB table {table_name} does not exist")
+        
+        item = inference_record.get('Item')
+        if not item:
+            raise Exception("Inference setting not found for inference_setting_id: 1")
+        cache_bucket = item.get('cache_bucket')
+        if not cache_bucket:
+            raise Exception("cache_bucket not found in item")
+        
+        logging.info("cache_bucket: %s", cache_bucket)
+        
+        transcript_bucket_name = cache_bucket
         transcript_prefix = s3_dest_uri_w_prefix.replace(f"s3://{transcript_bucket_name}/", "")
         logging.info(f"Checking transcripts in s3://{transcript_bucket_name}/{transcript_prefix}")
 
