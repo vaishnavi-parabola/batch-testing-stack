@@ -130,7 +130,7 @@ def handler(event, context):
             }
 
         # Check for matching .json files
-        mp4_base_names = {key.rsplit("/", 1)[-1].rsplit(".", 1)[0] for key in mp4_files}
+        mp4_base_names = {key.rsplit("/", 1)[-1].rsplit(".", 1)[0].removeprefix("det_") for key in mp4_files}
         json_base_names = {key.rsplit("/", 1)[-1].rsplit(".", 1)[0].replace("ts_", "", 1) for key in json_files}
         missing_json = mp4_base_names - json_base_names
         
