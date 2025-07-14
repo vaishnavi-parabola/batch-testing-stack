@@ -55,6 +55,17 @@ def test_get_status_by_id_lambda_function(scope, function_name, handler_file, la
         role=lambda_role,
         timeout=Duration.minutes(1)
     )
+    
+def test_events_lambda_function(scope, function_name, handler_file, lambda_role):
+    return _lambda.Function(
+        scope, function_name,
+        runtime=_lambda.Runtime.PYTHON_3_12,
+        handler=f"{handler_file}.handler",
+        code=_lambda.Code.from_asset(os.path.join(os.getcwd(), 'lambda', handler_file)),
+        role=lambda_role,
+        timeout=Duration.minutes(1)
+    )
+    
 
     
 def create_lambda_role(scope):
@@ -96,7 +107,9 @@ def create_lambda_role(scope):
                             "arn:aws:s3:::transcriptsmumbai",
                             "arn:aws:s3:::transcriptsmumbai/*",
                             "arn:aws:s3:::accident-alert-bucket-us-east-1",
-                            "arn:aws:s3:::accident-alert-bucket-us-east-1/*"
+                            "arn:aws:s3:::accident-alert-bucket-us-east-1/*",
+                            "arn:aws:s3:::testing-video-and-transcript-us-east-2-337909749314/artifacts/event_detection/events_to_detect.json",
+                            "arn:aws:s3:::testing-video-and-transcript-us-east-2-337909749314"
                         ],
                         effect=iam.Effect.ALLOW
                     ),

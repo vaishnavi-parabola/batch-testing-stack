@@ -14,7 +14,8 @@ from stack.lambda_functions import (
     test_batch_video_chat_lambda_function,
     test_batch_video_execution_lambda_function,
     test_batch_video_transcript_lambda_function,
-    test_get_status_by_id_lambda_function
+    test_get_status_by_id_lambda_function,
+    test_events_lambda_function
 )
 
 # API Gateway
@@ -50,6 +51,7 @@ class BatchTestingCdkStack(Stack):
         batch_video_execution_test_lambda = test_batch_video_execution_lambda_function(self,"BatchVideoTestExecutionLambda", "batch-video-execution-testing", lambda_role, pandas_layer, inference_table)
         batch_video_transcript_test_lambda= test_batch_video_transcript_lambda_function(self, "BatchVideoTestTranscriptLambda", "batch-video-transcript-testing",lambda_role, inference_table )
         batch_video_get_status_by_id_test_lambda = test_get_status_by_id_lambda_function(self, "BatchVideoGetStatusByIdTestLambda", "batch-video-get-status-by-id-test", lambda_role, inference_table )
+        events_config_test_lambda = test_events_lambda_function(self,"EventsConfigsTestLambda","events-configs-test",lambda_role)
         
         #lambda attached to apigateway
         api= build_batch_chat_testing_api_gateway(
@@ -57,7 +59,8 @@ class BatchTestingCdkStack(Stack):
             batch_video_chat_test_lambda,
             batch_video_execution_test_lambda,
             batch_video_transcript_test_lambda,
-            batch_video_get_status_by_id_test_lambda
+            batch_video_get_status_by_id_test_lambda,
+            events_config_test_lambda
         )
          
         CfnOutput(self, "BatchVideoTestUrl", value=api.url)

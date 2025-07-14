@@ -4,7 +4,7 @@ from aws_cdk import (
     aws_iam as iam
 )
 
-def build_batch_chat_testing_api_gateway(scope, batch_video_chat_test_lambda, batch_video_execution_test_lambda, batch_video_transcript_test_lambda, batch_video_get_status_by_id_test_lambda):
+def build_batch_chat_testing_api_gateway(scope, batch_video_chat_test_lambda, batch_video_execution_test_lambda, batch_video_transcript_test_lambda, batch_video_get_status_by_id_test_lambda, events_config_test_lambda):
     api = apigateway.RestApi(
         scope, "BatchChatTestingAPI",
         rest_api_name="BatchChatTesting API",
@@ -28,6 +28,9 @@ def build_batch_chat_testing_api_gateway(scope, batch_video_chat_test_lambda, ba
         "GET",
         apigateway.LambdaIntegration(batch_video_get_status_by_id_test_lambda),    
     )
+    events_configs=api.root.add_resource("events-configs-test")
+    events_configs.add_method("GET", apigateway.LambdaIntegration(events_config_test_lambda))
+    events_configs.add_method("PUT", apigateway.LambdaIntegration(events_config_test_lambda))
 
     
     return api
